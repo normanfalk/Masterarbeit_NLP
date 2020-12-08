@@ -1,0 +1,100 @@
+---
+title: "R Notebook zur explorativen Datenanalyse"
+output: html_document
+---
+
+
+
+```{r packages, include=F}
+library(data.table)
+library(dplyr)
+library(tidytext)
+library(tm)
+library(ggplot2)
+library(DT)
+
+```
+
+An dieser Stelle wird der Datensatz (08.12.2020) mit einem experimentellen Topic-Modelling hochgeladen. Die explorative Datenanalyse findet hier statt. 
+
+```{r data import}
+data <- readRDS("Comments_by_model.rds")
+head(data)
+```
+
+Ein paar grundlegendende Summary-Statistiken sind an dieser Stelle notwendig. Schauen wir zuerst auf die Topic Verteilung: 
+
+```{r LDA Topics}
+data %>% 
+  filter(!is.na(topic)) %>% 
+  group_by(submission) %>% 
+  slice(1) %>% 
+  group_by(topic) %>% 
+  count(topic)
+
+data %>% 
+  filter(!is.na(topic)) %>% 
+  group_by(submission) %>% 
+  slice(1) %>% 
+  group_by(topic) %>% 
+  count(topic) %>% 
+  ggplot(aes(x=topic, y = n))+
+  geom_col()+
+  geom_text(aes(label=n), nudge_y = 25)+
+  theme_minimal()
+```
+\
+Wir haben also eine recht ausgeglichene Verteilung: Bei 2329 Threads haben wir mind. 129 Threads für ein Thema, 539 ist hier die häufigste Ausprägung bei Thema 7. 
+Versuchen wir die Topics mal mehr oder weniger thematisch einzuordnen. 
+
+```{r load LDA}
+lda <- readRDS("LDA.rds")
+lda_betas <- tidy(lda, matrix = "beta")
+
+datatable(lda_betas %>% 
+  group_by(topic) %>% 
+  arrange(topic) %>% 
+  top_n(beta, n = 5)
+, rownames = F)
+```
+Als ersten Näherungsversuch sehe ich die Themen, die dort angesprochen werden, wie folgt: 
+
+* Topic 1: appli, compani, experi, job, resum
+  * Das liest sich eher nach einem Bewerbungsprozess, insbesondere wegen des 'appli'. Resum, experi sind zudem weitere Dinge, die dafür sprechen.
+* Topic 2: compani, job, offer, time, week
+  * Das liest sich auch eher nach Bewerbung, aber nach Verhandlung als nach Bewerungsprozess. Hier kann es gut sein, dass Details wie zeitliche Dinge besprochen werden (wie viel arbeitet man pro Woche?)
+* Topic 3: code, manag, peopl, team, time
+  * Fällt mir spontan schwer, hier etwas klares herauszulesen. Was ich mir vorstellen könnte, ist eine Team-Zusammenarbeit. Kollaboratives Arbeiten im Team ggf.
+* Topic 4: compani, interview, leetcod, question, time
+  * Das liest sich für mich auch nach Bewerbung, aber eher um das Bewerbungsgespräch, einer Vorbereitung dahingehend via leetcode und ggf. auch coding interviews!? => Was bedeutet time hier?
+* Topic 5: check, compani, http, line, time
+  * Ganz schwer - http macht hier keinen Sinn, line müsste ich eroieren. check ist damit geld gemeint?
+* Topic 6: compani, job, live, pai, peopl
+  * Arbeitsbedingungen? Bezahlung, work/life balance ggf?
+* Topic 7: c, engin, job, learn, degre
+  * Das ist wohl im Sinne des Tech Stacks gemeint. Hier sehen wir ja die meisten Ausprägungen, also wäre ein stärkerer Blick in diese Kategorie sicher hilfreich. Sind hier auch Lernprozesse integriert?
+  * Also Thema: Welche sprachen lernen, generell lernen, brauche ich einen Abschluss etc.?
+
+Es ist also durchaus sinnvoll mal in einzelne Threads zu schauen. Schritt 1 wäre also die submission_ids herauszufiltern, die besonders einprägsam für die jeweilige Kategorie sind.
+
+```{r lda gamma}
+lda_gammas <- tidy(lda, matrix = "gamma") 
+
+submission_titles <- readRDS("all_comments.rds")[,c(11,17),] %>% 
+  group_by(submission_id) %>% 
+  slice(1) %>% 
+  rename(document = submission_id)
+
+lda_gammas <- left_join(lda_gammas, submission_titles)
+
+#names(submission_titles)
+
+datatable(lda_gammas %>% 
+  group_by(topic) %>% 
+  arrange(topic) %>% 
+  top_n(gamma, n = 5)
+  )
+  
+```
+
+  
