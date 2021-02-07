@@ -12,10 +12,16 @@ library(tidytext)
 library(tm)
 library(ggplot2)
 library(DT)
-
+library(tidyr)
+library(stringr)
+library(SnowballC)
+library(igraph)
+library(ggraph)
+library(tidyverse)
+library(quanteda)
 ```
 
-An dieser Stelle wird der Datensatz (08.12.2020) mit einem experimentellen Topic-Modelling hochgeladen. Die explorative Datenanalyse findet hier statt. 
+Die explorative Datenanalyse findet hier statt. 
 
 ```{r data import}
 data <- readRDS("Comments_by_model.rds")
@@ -25,6 +31,13 @@ head(data)
 Ein paar grundlegendende Summary-Statistiken sind an dieser Stelle notwendig. Schauen wir zuerst auf die Topic Verteilung: 
 
 ```{r LDA Topics}
+
+data %>% 
+  group_by(submission) %>% 
+  slice(1) %>% 
+  ungroup() %>% 
+  count()
+
 data %>% 
   filter(!is.na(topic)) %>% 
   group_by(submission) %>% 
@@ -40,11 +53,11 @@ data %>%
   count(topic) %>% 
   ggplot(aes(x=topic, y = n))+
   geom_col()+
-  geom_text(aes(label=n), nudge_y = 25)+
+  geom_text(aes(label=n), nudge_y = 30)+
   theme_minimal()
 ```
 \
-Wir haben also eine recht ausgeglichene Verteilung: Bei 2329 Threads haben wir mind. 129 Threads für ein Thema, 539 ist hier die häufigste Ausprägung bei Thema 7. 
+Wir haben also eine recht ausgeglichene Verteilung: Bei 5358 Threads haben wir mind. 556 Threads für ein Thema, 1146 ist hier die häufigste Ausprägung bei Thema 3. 
 Versuchen wir die Topics mal mehr oder weniger thematisch einzuordnen. 
 
 ```{r load LDA}
@@ -54,31 +67,36 @@ lda_betas <- tidy(lda, matrix = "beta")
 datatable(lda_betas %>% 
   group_by(topic) %>% 
   arrange(topic) %>% 
-  top_n(beta, n = 5)
+  top_n(beta, n = 10)
 , rownames = F)
 ```
+
 Als ersten Näherungsversuch sehe ich die Themen, die dort angesprochen werden, wie folgt: 
+* Topic 1: c, engin, job, school, degre
+  * C als Programmiersprache, engin* meint engineer, degree und school weißt insgesamt sehr darauf hin, dass es um die schulische Ausbildung und im weitesten Sinne der eigenen Karriere geht. Quasi um Fragen, die behandeln: Wie komme ich zu einem Software Engineer/developer Job?
+*Topic 2: compani, manag, peopl, team, time
+  * compani ist sehr überbegrifflich, manag(er?) heißt ebenso wie people/team, dass es um die aktuelle Stelle und das Arbeitsklima und die Arbeitsbeziehung geht. Time ist ein sehr interessanter Punkt, der neben personellen Dingen (Manager/Team) eine Rolle spielt.
+*Topic 3: appli, compani, interview, job, offer
+  * Relativ eindeutig: Hier geht es um den Bewerbungsprozess und dabei vermutlich eher um den ersten Teil, das Bewerben selbst, weniger um Details zur Anstellung. 
+*Topic 4: dai, hour, job, life time
+  * Schwierig zusammen zu fassen mit einem Oberbegriff, aber geht in die Richtung der Work-Life-Balance. Arbeitspensum (dai, hour, life) spielt hier eine Rolle und insgesamt scheint es das erste Mal um Themen zu gehen, die abseits der eigentlichen Arbeitsschwerpunkte gedacht werden. Im Sinne der Forschungsfrage kann dieses Topic vielversprechend sein. 
+*Topic 5: compani, monei, pai, salari, tech
+  * Es geht um Geld und zwar in drei Wegen: monei, pai, salari. Tech muss via Kookkurrenz herausgearbeitet werden. Das kann tech stack meinen, das kann aber auch oberbegrifflich gemeint sein.
+*Topic 6: code, develop, learn, project, test
+  * code/develop/learn spricht sehr für das eigentliche coding, was thematisch schwer zu greifen ist. Learn ist im Sinne des Exzellenzanspruchs und der Innovation ein sehr interessantes Konstrukt. Test muss genauer zugeordnet werden. 
 
-* Topic 1: appli, compani, experi, job, resum
-  * Das liest sich eher nach einem Bewerbungsprozess, insbesondere wegen des 'appli'. Resum, experi sind zudem weitere Dinge, die dafür sprechen.
-* Topic 2: compani, job, offer, time, week
-  * Das liest sich auch eher nach Bewerbung, aber nach Verhandlung als nach Bewerungsprozess. Hier kann es gut sein, dass Details wie zeitliche Dinge besprochen werden (wie viel arbeitet man pro Woche?)
-* Topic 3: code, manag, peopl, team, time
-  * Fällt mir spontan schwer, hier etwas klares herauszulesen. Was ich mir vorstellen könnte, ist eine Team-Zusammenarbeit. Kollaboratives Arbeiten im Team ggf.
-* Topic 4: compani, interview, leetcod, question, time
-  * Das liest sich für mich auch nach Bewerbung, aber eher um das Bewerbungsgespräch, einer Vorbereitung dahingehend via leetcode und ggf. auch coding interviews!? => Was bedeutet time hier?
-* Topic 5: check, compani, http, line, time
-  * Ganz schwer - http macht hier keinen Sinn, line müsste ich eroieren. check ist damit geld gemeint?
-* Topic 6: compani, job, live, pai, peopl
-  * Arbeitsbedingungen? Bezahlung, work/life balance ggf?
-* Topic 7: c, engin, job, learn, degre
-  * Das ist wohl im Sinne des Tech Stacks gemeint. Hier sehen wir ja die meisten Ausprägungen, also wäre ein stärkerer Blick in diese Kategorie sicher hilfreich. Sind hier auch Lernprozesse integriert?
-  * Also Thema: Welche sprachen lernen, generell lernen, brauche ich einen Abschluss etc.?
+Der erste Versuch die Themen zu benennen würde wie folgt lauten: 
+*Topic 1: Ausbildung/Studium/Karriereweg
+*Topic 2: Arbeitsbeziehungen/Arbeitsklima/Zwischenmenschliche Beziehungen
+*Topic 3: Bewerbungen/Bewerbungsprozess/Jobsuche
+*Topic 4: Arbeit und Leben/Zeit/Pensum
+*Topic 5: Geld/Gehaltsverhandlungen
+*Topic 6: Weiterentwicklung/Coding/Lernen/Eigenbeschäftigung
 
-Es ist also durchaus sinnvoll mal in einzelne Threads zu schauen. Schritt 1 wäre also die submission_ids herauszufiltern, die besonders einprägsam für die jeweilige Kategorie sind.
+Es ist also durchaus sinnvoll mal in einzelne Threads zu schauen. Schritt 1 wäre also die submission_ids herauszufiltern, die einen besonders hohen Theta-Wert (hier Gamma) für die jeweilige Kategorie aufweisen. 
 
 ```{r lda gamma}
-lda_gammas <- tidy(lda, matrix = "gamma") 
+lda_gammas <- tidy(lda, matrix = "gamma")
 
 submission_titles <- readRDS("all_comments.rds")[,c(11,17),] %>% 
   group_by(submission_id) %>% 
@@ -92,9 +110,163 @@ lda_gammas <- left_join(lda_gammas, submission_titles)
 datatable(lda_gammas %>% 
   group_by(topic) %>% 
   arrange(topic) %>% 
-  top_n(gamma, n = 5)
+  top_n(gamma, n = 5) %>% 
+  mutate(URL = paste0("reddit.com/", document))
   )
   
 ```
+Wenn man sich die Verteilung hier anschaut, dann bestätigen sich zumindest etwas die jeweiligen Topics: 
+Zum einen kann der submission_title (wie in Spalte 3 angegeben) als Referenz genutzt werden, die jeweiligen Threads lassen sich via reddit.com/[document] aufrufen (z.B. reddit.com/k6ljh5)
+
+* Topic 1: Bestätigt sich vollkommen. Die meisten Fragen sind in der Tat von Studenten, die nach Abschlüssen oder auch Studiengängen fragen. 
+* Topic 2: Der Eindruck bestätigt sich ebenso. Hier werden viele Nachfragen gestellt zu Arbeitsklima oder Beziehungen zu Vorgesetzten/Kollegen. Alle fünf Beispiele wirken eher negativ. 
+* Topic 3: Allgemeine Jobsuche und Bewerbungsprozess scheint zu stimmen. Der Eindruck, es gehe um wirkliche Bewerbungsgesräche, erhärtet sich nicht. Tendenziell geht es hier wohl eher um die wirkliche Jobsuche und die Frage "How to land a Job?"
+* Topic 4: Die Zeit spielt ja in der Tat eine Rolle, auch in Bezug auf den Beruf, aber es geht hier vermehrt um Tipps, um das Arbeitsleben psychisch besser zu bewältigen. Wie kommen andere EntwicklerInnen runter, wie nehmen Sie sich eine Pause? Dabei spielt die always-on-Mentalität eine große Rolle. Auch die Pandemie ist mit Sicherheit ein Wirkfaktor. Darüber hinaus spielen Zeitnutzung und Zeit allgemein einen großen Faktor. 
+* Topic 5: Das Thema ist definitiv Geld, aber in einer Varianz an Schwerpunkten. Es geht zum einen um CoL (also Cost of Living), aber auch Stock Options, die als Teil der Kompensation gesehen werden. 
+* Topic 6: Anders als gedacht ist hier das Thema viel mehr der technische und operative Weg hin zu gewissen Sprachen/Expertisen etc. Was rein operativ anmutet, hat jedoch für die Innovations- und Ethik-Diskussion großen Mehrwert, da hier vor dem Hintergrund der notwendigen Scchritte und ggf. auch Aufopferung diskutiert wird. Bei der Frage "Wie werde ich XY?", die implizit häufig gestellt wird, werden so Denkweisen und Erwartungshaltungen offen gelegt. 
+
+Die zweite Iteration der Themenzuordnung ergibt folgendes: 
+*Topic 1: Ausbildung/Studium/Karriereweg/Studiengänge
+*Topic 2: Arbeitsbeziehungen/Arbeitsklima/Zwischenmenschliche Beziehungen
+*Topic 3: Bewerbungen/Bewerbungsprozess/Jobsuche
+*Topic 4: Arbeit und Leben/Zeit/Nicht-Arbeitszeit
+*Topic 5: Geld/Gehaltsverhandlungen/Finanzen/Aktien
+*Topic 6: Weiterentwicklung/Coding/Lernen/Eigenbeschäftigung/Sprachen
 
   
+Dazu schauen wir uns in den Bereichen also nun mal so ein wenig die Kookkurrenzen an. Vorher muss aus dem Grunddatensatz ein Document-Term-Matrix gemacht werden. 
+
+```{r network, include = FALSE}
+data_unique <- readRDS("all_comments.rds")[,c(2,8,11,17),] %>% 
+  group_by(comment_id) %>% 
+  slice(1)
+
+data_unique <- left_join(data_unique, data[c(3:4)])
+data_unique$Text <- gsub("?(f|ht)tp(s?)\\S+\\s*", "", data_unique$Text)
+
+cscq_corpus <- corpus(data_unique$Text, docnames = data_unique$comment_id, 
+                      docvars = data.frame(title = data_unique$submission_title, id = data_unique$submission_id, topic = data_unique$topic, comment_id = data_unique$comment_id))
+#ndoc(cscq_corpus)
+
+corpus_sentences <- corpus_reshape(cscq_corpus, to = "sentences")
+#ndoc(corpus_sentences)
+#texts(corpus_sentences)[1]
+
+
+lemma_data <- read.csv("baseform_en.tsv", encoding = "UTF-8")
+
+# read an extended stop word list
+stopwords_extended <- stop_words$word
+
+# Preprocessing of the corpus of sentences
+corpus_tokens <- corpus_sentences %>% 
+  tokens(remove_punct = TRUE, remove_numbers = TRUE, remove_symbols = TRUE) %>% 
+  tokens_tolower() %>% 
+  tokens_replace(lemma_data$inflected_form, lemma_data$lemma, valuetype = "fixed") %>% 
+  tokens_remove(pattern = stopwords_extended, padding = T)
+
+cscq_collocations <- textstat_collocations(corpus_tokens, min_count = 25)
+cscq_collocations <- cscq_collocations[1:250, ]
+
+corpus_tokens <- tokens_compound(corpus_tokens, cscq_collocations)
+
+
+minimumFrequency <- 10
+
+binDTM <- corpus_tokens %>% 
+  tokens_remove("") %>%
+  dfm() %>% 
+  dfm_trim(min_docfreq = minimumFrequency, max_docfreq = Inf) %>% 
+  dfm_weight("boolean")
+
+  
+```
+
+Die Visualisierung sähe dann wie folgt aus. Hier sehen wir am Beispiel des Wortes "Tech" im Subkorpus 5, dass dieses Wort sich auf die Vielzahl an Bezeichnungen für Techfirmen und die Branche abzielt. Es ist von tech jobs, tech companies/giants/firms/scene/hub die Rede. 
+```{r quanteda dtm, dpi = 72}
+source("plotCooc.R")
+
+binDTM %>% 
+  dfm_subset(topic == 5) %>% 
+  plotCooc(n=15, "tech") # Gespeichert als Kook_T5_Tech
+
+# 
+# test <- corpus_sentences[which(grepl("faang", corpus_sentences, ignore.case = T))] 
+# kwic(x = .,pattern = phrase("prior experience"), window = 5 )
+
+```
+
+Anhand der Topics ist ersichtlich, welche Topics aus welchen Gründen sehr interessant für weitere Analysen sein können. Das Topic Vier beschäftigt sich fast ausschließlich mit dem Thema Zeit in verschiedenen Formen, während Topic 6 ausdrückt, dass die Weiterentwicklung, das Lernen, verschiedene Frameworks und Programmiersprachen eine Rolle spielen. 
+
+Ich möchte mir Topic 6 noch einmal genauer anschauen. 
+
+```{r topic6}
+datatable(lda_gammas %>% 
+  group_by(topic) %>% 
+  arrange(topic) %>% 
+  filter(topic == 6) %>% 
+  top_n(gamma, n = 50) %>% 
+  mutate(URL = paste0("reddit.com/", document))
+  )
+```
+Nachdem ein Großteil der Inhalte des Topic 6 angeschaut wurde, lässt sich hier zusammenfassen: Es geht um Operatives und Entwicklung. Inhalte sind hier sehr nah an Sprachen und an Entwicklungen hin zu gewissen Positionen/Spezifizierungen, um die Verbesserung des eigenen "Status" durch eigene Projekte oder Leetcode. Beides ist sehr interessant, insb. ggf. für die Forschungsfrage 3. Auf der anderen Seite gibt es sehr technische Fragen, die nichts mit der Berufswelt zu tun hat, sondern genau genommen technische Fragen sind (kkrh2d, kn7rb3).
+
+Damit steht aber trotzdem fest, dass Topic ein sehr interessantes Topic ist, das untersucht werden wird. Topic 3 wird für Bewerbungsprozesse interessant sein, hier sehe ich Potenzial für Frage 4, während Topic 5 im weitesten Sinne als Vergleich zur Hacker Ethik angeschaut werden kann. 
+Am ehesten, und damit geht es mit der Forschungsfrage 2 los, sind Arbeitsethik-Diskurse in Thema 4, 6 oder 5 zu vermuten. 
+
+Angesichts der Topic-bestimmenden Worte liegt es nahe, sich das Thema Zeit genauer anzusehen, da dies Teil der Arbeitsethik und des Selbstverständnisses ist, aber auch hier sehr sehr prominent diskutiert wird. Darüber hinaus spielt Lernen eine größere Rolle, die es zu untersuchen gilt. 
+
+Was sehen wir also beim Thema Zeit in Topic 4?
+```{r FF2 Time}
+
+binDTM %>% 
+  dfm_subset(topic == 4) %>% 
+  plotCooc(n=15, "time")
+
+corpus_sentences_t4 <- corpus_subset(cscq_corpus, topic == 4)
+
+
+datatable(corpus_subset(corpus_sentences_t4, grepl("time", corpus_sentences_t4, ignore.case = T)) %>% 
+  kwic(x = .,pattern = "spare", window = 10 ))
+quanteda::corpus_subset(corpus_sentences, comment_id== "gc45aw0") # Zitat für den Impetus der Nutzung von Freizeit. 
+
+binDTM %>% 
+  dfm_subset(topic == 4) %>% 
+  plotCooc(n=15, "free_time")
+
+```
+Der Blick auf den Begriff "Time" im Topic 4 zeigt, dass dieser Begriff sehr häufig in Bezug auf zeitliche Dimensionen genutzt wird (hours, spend, lot, amount, day etc.), aber darüber hinaus auch inhaltlich viel dahinter steckt. Es geht also weniger um das Vertreiben von Zeit, sondern um Auseinandersetzung mit Zeit. Was aber auffällt ist, dass eine sehr signifikante Kookkurrenz das verschwenden (waste) von Zeit sowie die Freizeitist. Die KWIC-Analyse zeigt hier bei der Freizeit interessante Ergebnisse: Die KWIC-Analyse dieser Kookkurrenz (d.h. Sätze mit "Time") des Begriffs "spare" zeigt, dass Freizeit eng verknüpft mit den Inhalten der Arbeit ist. Die Begrifflichkeiten "personal project", "GitHub", "Leetcode" tauchen hier immer wieder auf und darüber hinaus auch stetig das Wort lernen. Was darin zu erkennen ist, ist dass Freizeit für Entwickler eng mit Weiterentwicklung verbunden ist und sich die Inhalte überschneiden. Zwar gibt es hier auch gegenteilige Stimmen, die sich in ihrer Freizeit eben nicht diesen Aufgaben widmen wollen, doch zum einen bildet. 
+Beim Studieren der Inhalte über die vergangenen Monate ist auch auffällig geworden, dass insbesondere Posts und Kommentare, die diese Entwicklung anprangern, positiv bewertet werden. Der Kommentar gc45aw0 fasst die Mentalität passend zusammen, indem er in bester Hacker-Ethik-Manier die fehlende Leidenschaft bei Entwicklern bemängelt, die sich eben über die negativen, zeitintensiven Dinge des Berufs- und persönlichen Alltags auslassen. 
+Es ist insgesamt zu erkennen, dass das Thema von Freizeit-Nutzung ein wirklich prägender Diskurs und Streitpunkt ist, da sich die Eigenart des Forums aufteilt in zwei Bereiche: Zum einen ist zu erkennen, dass viele Leute sich in der Tat über die Erwartungshaltung beschweren, die in der Branche existiert und besagt: Programmiert viel in der Freizeit, lernt viel. Der Umstand, dass dieses Forum sich darüber brüskiert, ändert nichts an der Tatsache, dass daran zu erkennen ist, dass dies die Realität dieser Branche und dieses Berufsfeldes ist. Das bedeutet, dass es in der Tat Leute gibt, die viel Freizeit in die Entwicklung von eigenen Projekten stecken und dabei Berufseinsteiger und Neue (Denn das ist im Grunde die Gruppe, die sich im Forum tummelt) unter Druck setzt und verunsichert. Denn diese Beschwerden sind im weitesten Sinne Spiegelbild eines Impetus' der im Markt herrscht und aus diversen Ecken herauskommt. Woher ist schwer zu sagen, aber die Erwartungshaltung ist im Sinne der Freizeitnutzung klar: Nutzt sie wiese, entwickelt euch weiter. 
+Die andere Seite sind diejenigen, die sich beinahe rechtfertigen und angeben, dass sie es mögen, in ihrer Freizeit zu programmieren, sich zu entwickeln und Fortschritte zu machen. Sie stören sich nicht daran, dass dieser Impetus herrscht und der Markt solche Leute offensichtlich begünstigt. Folglich ist hier zu sagen, dass die Verschmelzung der Freizeit und Arbeitszeit in der Tat stärker wird, sich die Hacker Ethik hier immer noch hält und dadurch Tür und Tor für Weiterentwicklung öffnet. 
+Eine Kollokation, die auftaucht, ist zudem "free_time". Hier zeigt die Kookkurrenzanalyse ebenso die strikte Verbdindung von arbeitsfreier Zeit, die aber mit Programmieren, persönlichen Projekten etc. verbunden wird. Interessanterweise ist hier aber auch zu sehen, dass die enge semantische Verknüpfung mit code ebenso das Wort "Fun" hervorbringt und auch die Nähe zu Hobby groß ist. Insofern bestätigt diese Kookkurrenz, dass nach Guttandin tatsächlich eine ungebrochene Einheit zwischen Beruf und innerstem Kern der Persönlichkeit bei vielen Menschen zu erkennen ist. Und dieser innere Kern verknüpft die Freizeit mit den Inhalten der Arbeit. 
+Entgegen der protestantischen Ethik ist Arbeit nicht mehr Pflicht, sie ist Teil des Lebens und konsistent aufrecht erhaltene Hacker-Ethik, denn sie ist: Leidenschaft. 
+
+
+
+
+```{r cooc learn}
+datatable(cscq_collocations)
+
+binDTM %>% 
+  plotCooc(n=15, "personal_projects")
+```
+Blicken wir eine Ebene tiefer, das heißt in den Bereich der Inhalte der freizeitlichen Auseinandersetzung, dann geht es um Lernen, Weiterentwicklung und Beitragen (contribute).Diese Off-Time Zeit mit den beruflichen Inhalten wird häufig via Persönlicher Projekte (personal Projects) ausgelebt. In der Kookkurenzanalyse dieser Kollokation sind weitere arbeitsethische Inhalte wiederzufinden. Zum einen ist anhand der Nähe zum Thema Freizeit klar, in welchem Umfang diese Tätigkeiten ausgeübt werden, zum anderen wird schnell erkenntlich, was das Ziel dieser persönlichen Projekte ist: 
+
+Zum einen ist die Erfahrung, die solche Projekte bringen, offensichtlich nicht von der Hand zu weisen, aber die semantische Nähe zur Bewerbung, zu Fähigkeiten, zum Praktikum und zu Personalern macht deutlich, dass diese persönlichen Projekte durchgeführt werden, um sich stetig weiter zu entwickeln und somit im Berufsmarkt voran zu kommen. Hier sind wir weniger im deutenden Bereich der Branche als im beschreibenden Bereich unterwegs, da hier keine Wertung zum Thema personal projects vorhanden ist. Insofern ist dieser Einblick aber bezeichnend für die Arbeitsweise und für die Grundprinzipien, die bei EntwicklerInnen und solchen, die es werden wollen, vorhanden sind: 
+Die Auseinandersetzung mit beruflichen Inhalten sind nicht nur förderlich, sondern notwendig, da sie nicht nur die Fähigkeiten erhöhen, sondern die Chancen, sich auf dem Berufsmarkt zu behaupten. 
+Was hier passiert, ist beeindruckend: Aus einem ethischen Prinzip der Hacker Ethik, das ausgibt, sich an Open Source-Projekten zu beteiligen, wurde nicht einmal ein Wettbewerbsvorteil im Berufsmarkt, sondern gar eine Notwendigkeit des Arbeitsmarkt von SoftwareentwicklerInnen. Das bedeutet, dass es nicht nur um die Erweiterung der Fähigkeiten aus Grund des eigenen Exzellenzstrebens geht, sondern um die Notwendigkeit, als Softwareentwickler zu bestehen und sich durchzusetzen. 
+
+```{r learn kwic}
+datatable(corpus_sentences %>% 
+  kwic(x = .,pattern = phrase("personal projects"), window = 10 ))
+
+```
+
+Das Close-Reading hilft hier erneut: Der Diskurs um persönliche Projekte stellt ihre Wichtigkeit heraus. Die Diskurse gehen hier in verschiedene Richtungen, da ihr Wert einerseits als Teil der Bewerbung als immens hoch (höher als ein Praktikum in einem relevanten Beruf) eingeschätzt wird (gcbhq9k), andererseits, weil das Können im Vordergrund stehen sollte und viele persönliche Projekte nichts bringen, wenn das Fundament dafür nicht besteht. In engem Zusammenhang mit dem Fundament steht die Verbindung von Lernen (Lern-Kookkurrenz) zu fundamentalen Bereichen, die neben neuen Sprachen gekonnt sein müssen. 
+
+Was insbesondere im Lern-Bereich auffällt ist, dass viele Fragen in die Richtung Career-Advice gehen und nach Rat gefragt wird. Hier sind die Ratschläge, die häufig für die Entwicklung persönlicher Projekte sprechen, zumeist sehr direkt und auffordernd. Die Wortwahl ist dabei "You should", "Start Working" etc. 
+
+Insofern kann zwischenzeitlich resümiert werden, dass arbeitsethische Diskurse bedeutend stark in die Richtung von Zeit und Zeitnutzung gehen, das bedeutet, dass es eine Prinzipienordnung für Freizeit gibt und wie diese zu werten ist. Auf der anderen Seite steht überall das Thema Lernen im Mittelpunkt und Weiterentwicklung im Mittelpunkt, das schlussendlich aber das Ziel der Employability hat. 
+
+Wie sieht es mit Geld aus? Und welche Ethik-Bereiche gibt es noch? 
