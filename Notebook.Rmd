@@ -2,7 +2,7 @@
 title: "R Notebook zur explorativen Datenanalyse"
 output: html_document
 knit: (function(inputFile, encoding) {
-    rmarkdown::render(inputFile, encoding = encoding, output_dir = "docs/")
+    rmarkdown::render(inputFile, encoding = encoding, output_dir = "docs/", output_file = "index.html")
   })
 ---
 
@@ -271,6 +271,79 @@ Das Close-Reading hilft hier erneut: Der Diskurs um persönliche Projekte stellt
 Was insbesondere im Lern-Bereich auffällt ist, dass viele Fragen in die Richtung Career-Advice gehen und nach Rat gefragt wird. Hier sind die Ratschläge, die häufig für die Entwicklung persönlicher Projekte sprechen, zumeist sehr direkt und auffordernd. Die Wortwahl ist dabei "You should", "Start Working" etc. 
 
 Insofern kann zwischenzeitlich resümiert werden, dass arbeitsethische Diskurse bedeutend stark in die Richtung von Zeit und Zeitnutzung gehen, das bedeutet, dass es eine Prinzipienordnung für Freizeit gibt und wie diese zu werten ist. Auf der anderen Seite steht überall das Thema Lernen im Mittelpunkt und Weiterentwicklung im Mittelpunkt, das schlussendlich aber das Ziel der Employability hat. 
-Das ist ein klares Indiz dahingehend, dass sder 
+Das ist ein klares Indiz dahingehend, dass sich eine Weiterentwicklung hin zum unternehmerischen Selbst im Gange ist. Die Prinzipienordnung für EntwicklerInnen entfaltet sich so, dass Wert darauf gelegt wird, sich weiter "anstellbar" zu halten, sich stetig mit neuen Dingen auseinander zu setzen und sich so in seiner Freizeit auf dem Arbeitsmarkt besser zu positionieren. 
 
-Wie sieht es mit Geld aus? Und welche Ethik-Bereiche gibt es noch? 
+Gleichwohl diese Handlungsmuster tief im Handeln verankert sind, so haben Sie negative Effekte auf Teile der Community, was sich bei der Kookkurrenz des Themas "Free Time" bereits zeigt: Eine signifikante Kookkurrenz ist in der Tat die Nennung "overworked", die es sich genauer anzuschauen gilt. 
+
+```{r anxiety}
+
+
+tweets_dfm_grouped <- dfm(binDTM, groups = "topic")
+tstat_key <- textstat_keyness(tweets_dfm_grouped, 
+                              target = 4)
+
+textplot_keyness(tstat_key)
+
+datatable(corpus_subset(corpus_sentences_t4) %>% 
+  kwic(x = .,pattern = "anxiety", window = 10 ))
+
+```
+Aber auch neben overworked zeigt die Keyness-Metrik, dass im Topic 4 vermehrt über Dinge des persönlichen Lebens geredet werden, die suggerieren, dass hier die eigenen Vorstellungen durchkommen. Sowohl PTO (Paid/personal time off), als auch wfh (work from home), Schlaf, Angstzustände, Stress und Hobbies spielen eine Rolle. Der Diskurs, der um diese Begriffe entsteht, ist hingegen äußerst interessant außer einer Manigfaltigkeit an Gründen. Zum einen ist die Tatsache, dass von Ängsten und Angststörungen die Rede ist, zu vernehmen, dass solche Themen nicht tabuisiert und ignoriert werden und im Austausch nicht der reinen Marktlogik untergeordnet werden. Sie finden Platz und Raum und sie werden gehört. Das bedeutet, dass Problemberichte über Ängste, depressive Gedanken und Unsicherheit nicht ignoriert werden und nicht im Sinne einer toxischen Hacker-Ethik marginalisiert werden, sondern es entsteht unisono ein Raum, der Mut und Stärke zuspricht (gbhff91) (vvlt auch jrpsdd). Und er spricht nicht nur Stärke zu, das Thema der Angst und mentalen Einbußen, die die Arbeitswelt mit sich bringt, werden akzeptiert und untergeordnet. Teil der Hacker-Ethik, die quasi mitgibt, dass das ewiger Lernen/das Weiterentwickeln/die Expertise das höchste Gut sind, werden in beinahe allen Diskursen sofort eingenordet und dem großen Ganzen mentaler Gesundheit untergeordnet. 
+Zwar ist diese Beschreibung weniger explizit sichtbare Arbeitsethik, doch hier steckt das große wichtige Ziel und Prinzip der mentalen Gesundheit hinter.  ==> MENTAL HEALTH IST 10 WICHTIGSTE KOLLOKATION
+
+Das bedeutet, dass die Grundprinzipien dieser Always-on-Mentalität mit stetiger Entwicklung aktiv gefördert wird, sie wird verlangt, Hacken darf und soll Hobby sein, aber es hat eine Grenze und die ist genau an dem Punkt angekommen, an dem die Psyche angegriffen wird. Schlussendlich ist das Hacken damit nicht das große allumfassende Ziel mit dem Impetus einer Leidenschaft und BErufung (finde ich hier gute Hinweise aus der Hacke-Ethik selbst?), sondern die Blickwinkel auf die Betätigung im IT-Sektot ist sehr sportlich. Es gibt einen hohen konkurrenzdruck, es gibt eine Erwartungshaltung, es gibt Wettbewerbs- und Entwicklungsdruck, aber es gibt auch eine offensichtliche Akzeptanz, ein Amateursportler zu sein. Was sich hinter diesen Ansichten verbirgt ist der ausgiebige Wunsch nach hoher Work-Life-Balance, die nicht nur in der Informatiker-Bubble zu erkennen ist (Studien dazu?). Arbeit ist dann doch nicht DAS Leben, sie ist ein großer Teil des Lebens und teilweise Hobby, aber nicht größer als der eigene Entfaltung der Persönlichkeit und des eigenen Lebens. Hier muss einschränkend hingewiesen werden, dass wir uns auch hier im Bereich der jungen meist juniorigen Mitarbeiter befinden, die ggf. von den neuen Anforderungen des Arbeitsleben auch überfordert sind, was die Problematik von Angst und Depression größer erscheinen lassen könnte, als sie tatsächlich ist, aber die Tatsache, dass darüber geredet wird (was auch mit dem medium zu tun hat) und wie darauf geantwortet wird, festigt die Prinzipienordnung. ==> LIFE BALANCE IST 14 WICHTIGSTE KOLLOKATION
+
+
+```{r wfh}
+datatable(corpus_sentences_t4 %>% 
+  kwic(x = .,pattern = "wfh", window = 10 ))
+
+binDTM %>% 
+  #dfm_subset(topic == 4) %>% 
+  plotCooc(n=15, "wfh")
+
+```
+
+Die existierenden Diskussionen um "wfh" beispielsweise zeigt, wie sehr die Vorteile an der gesunkenen Pendelzeit wertgeschätzt werden, wie viele diese Lösung permanent oder in hybrider Form nachstreben und sich dies langfristig wünschen. Dahinter steckt hier auch im weitesten Sinne der Wunsch eigener Freiheit, wie in der Hacker Ethik beschrieben. Damals war das Thema häufig die Arbeitszeiten, während die aktuelle Pandemie wohl den Diskurs hin zu der Räumlichkeit des Arbeitens neu eröffnet hat. Die Freiheit der HackerInnen soll nicht an der Wahl der Arbeitszeit damals enden und sie sollte nun nicht an der Wahl des Arbeitsorts enden. Insbesondere dann, wenn Arbeit und die Auseinandersetzung mit Arbeit weder endet, wenn die "Schicht" zuende ist und nicht, wenn das Büro verlassen wird. Die Diskussionen rund um die Home Office-Erfahrungen vieler Community-Mitglieder gehen wie insgesamt gesellschaftlich in viele verschiedene Richtungen, bei der einzelne dies befürworten, andere hingegen dem Arbeiten im Büro fröhnen. Was dabei im Mittelpunkt steht, ist die freie Entscheidung und Entfaltung, bei der zwischen permanente/hybride Möglichkeiten je nach Arbeitnehmer entschieden werden darf. Der Grund dafür ist aber stets klar: Es geht zum einen um persönliche Lebensentfaltung und um eine Balance im Lebensalltag, der es ermöglicht, Dinge, die NICHT zur Arbeit gehören, zu ermöglichen. Insbesondere rückt dabei das Verbringen von Zeit mit der Familie und oder Freunden in den Mittelpunkt, was viele Wortmeldungen von eher seniorigen Mitgliedern andeuten. Dementsprechend ist ebenso ein wichtiger Wert, dass die Arbeit in die soziale (und psychische) Lebensführung passt, und sich dementsprechend nicht die ArbeitnehmerInnen der Arbeit anpassen. 
+
+
+Wie sieht es mit Geld aus?
+
+```{r money}
+binDTM %>% 
+  dfm_subset(topic == 5) %>% 
+  plotCooc(n=15, "money")
+
+binDTM %>% 
+  dfm_subset(topic == 5) %>% 
+  textstat_frequency(n=35)
+```
+Der Kookkurrenzgraph des Begriffs "Money" im Subkorpus 5, der eben solche Themen stark thematisiert, zeigt im Grunde die Wichtigkeit von Geld und die Einstellung zu Geld. Während in der Hacker-Ethik Geld einen untergeordneten Wert genießt und als Teilbereich der Kreativität mit ihrem ewigwährenden Gegensatz darsteht, so spielt Geld eine sehr große Rolle in CSCQ. Zum einen sind dies schnell zu erkennende Strukturmerkmale des Forums, sodass es regelmäßige Salary-Sharing-Threads gibt, bei denen Leute mitteilen können, was sie verdienen und wo sie "so viel" Geld verdienen sowie für welche Rolle. Das klingt schnell wie ein Angeber-Thread, kann aber auch im Sinne eine Kollektivierung oder Organisierung von Arbeitskräften zu verstehen sein. Auch in den USA sind Non-Disclosure-Verträge zum Gehalt so weit verbreitet wie in Deutschland, die verbieten, sich über Vertragsinhalte wie das Gehalt auszutauschen. Solche Sharing-Threads können im weitesten Sinne eine Hebelposition sein, die Transparenz in einem undurchsichtigen Gehältermarkt schaffen. Wer weiß, was er verdienen könnte und kann, der kann in Gehaltsverhandlungen deutlich besser vorbereitet gehen. Aus ähnlichen Anreizen ist die Webseite levels.fyi entstanden, die zwar nicht aus dem Forum CSCQ hervorgeht, jedoch trotzdem eine häufig referierte Plattform auf CSCQ darstellt. Ihr Ziel ist es, nachvollziehen zu können, wie hoch die Gehälter in verschiedenen Jobs ausfallen. Auch dies ist wieder ein Beispiel für den starken Solidarisierungsdrang bei gleichzeitigem Trachten nach Informationsfreiheit innerhalb der Hacker Kultur. Die "Macht", die bei Gehaltsverhandlungen sonst ganz stark auf Seiten der Arbeitgeber liegt, wird so dezentralisiert. ==> Total comp als häufige Kollokation. Sharing is caring. Daneben Signing bonus, minimum wage etc. 
+
+Darüber hinaus ist bereits in der Kookkurrenzanalyse zu erkennen, dass die Diskurse um Geld stark um inhaltlich Nahe Begriffe wie Rentenpläne, Altersvorsoge (401k) oder die Krankenkasse geht. Hier reichen die Fragen erneut stark in Details der Beschäftigungsverhältnisse hinein, jedoch geht es auch um das Geldverdienen an sich, um das verdienen von viel (lot) Geld geht.  
+
+```{r money 2}
+corpus_sentences_t5 <- corpus_subset(cscq_corpus, topic == 5)
+
+datatable(cscq_collocations)
+
+datatable(corpus_sentences_t5 %>% 
+  kwic(x = .,pattern = phrase("more money"), window = 10 ))
+```
+Threads wie l6evby (Software Engineer 3 Years of Experience - My Path to from 77k TC to 300k+ (70 LC)) zeigen aber ziemlich gut, dass eben der Verdienst irgendwann in den Mittelpunkt gerät und Teil des Erfolges ist. Es ist die Kennzahl der Expertise, des Erfolgs, es gibt auch in dieser ideell so stark verankerten Kultur an, wie erfolgreich jemand ist und ob er gut ist oder ob er weniger gut ist. Die Tatsache, dass das Gehalt im Mittelpunkt steht signalisiert bereits die Wichtigkeit von eben diesen Werten. Während in der Hacker Ethik etwas anderes (Lernen, Expertise) Mittelpunkt ist, so zeigt die Fixierung auf "six-figure-salaries" bereits, dass es ein großes Ziel ist, viel Geld zu verdienen. Ebenso liest sich in der Motivation vieler Entwickler, dass diese Branche durchaus lukrativ ist, um viel Geld zu verdienen. Aber durch die Fixierung auf Gehälter, die In-den-Mittelpunkt-Stellen dieser Gehälter wird schnell klar, dass Geld nicht untergeordnet ist, es ist das unmittelbare Ziel für das Bodenpersonal des Digitalkapitalismus, das von den Strukturvorteilen für die Entwickler ebenso profitieren möchte und somit wird in der spätkapitalistischen Version der Hacker-Ethik aus nicht-kommerziellen Werten und Vorstellungen ein kapitalistisches Arbeitsumfeld, in dem Geld der prägende Wert für Erfolg ist. ==> Zitate? 
+Dabei gibt es wenig Erwartungshaltung gegenüber einander in Diskussionen, in denen andere Saläre als schlecht/gering etc. tituliert werden, sondern dem Problem entsprechend diskutiert werden. Aber durch die Prominenz der Diskussionen um sechsstellige Gehälter (Stichwort 100k), der Diskussion um CoL, um housing cost etc. wird ständig über Geld diskutiert und sich auch hier versucht zu optimieren. Das bedeutet schlussendlich, dass aus dem Hobby, das man aus der Freude heraus macht, auch entsprechend bezahlt werden möchte, und hier scheint der Grundtenor zu sein, dass die SE um ihre Situation wissen und sehr demanding sind. Und in Kombination mit dem Teilen von Gehältern herrscht große Hilfe untereinander, um gemeinsam mehr Geld zu verdienen (gdqutam)
+
+
+Welche Rolle spielt Innovation? 
+
+* Welche Wichtigkeit hat Innovation allgemein als Wort? 
+* Ist ein starkes Druck Thema. 
+* Hier geht es weniger um das Normative, sondern mehr um die Beschreibung der existierenden Arbeitsumstände. Aber auch, so spreche ich selbst von um bottom up. 
+* Working hours? cutting edge? demanding? over time? 
+* Ggf ist das nicht zu erkennen, dass das auch unmittelbar gefordert wird. Leetcode und PP ggf. eher als Employability und als Investition in sich selbst, weniger um die tollsten Sachen selbst zu machen? 
+* Pressure? 
+
+
+
+Offene Fragen: 
+* Was sind die hochgewähltesten Posts in dieser Zeit? 
