@@ -325,10 +325,10 @@ Darüber hinaus ist bereits in der Kookkurrenzanalyse zu erkennen, dass die Disk
 ```{r money 2}
 corpus_sentences_t5 <- corpus_subset(cscq_corpus, topic == 5)
 
-datatable(cscq_collocations)
+#datatable(cscq_collocations)
 
-datatable(corpus_sentences_t5 %>% 
-  kwic(x = .,pattern = phrase("more money"), window = 10 ))
+# datatable(corpus_sentences_t5 %>% 
+#   kwic(x = .,pattern = phrase("more money"), window = 10 ))
 ```
 Threads wie l6evby (Software Engineer 3 Years of Experience - My Path to from 77k TC to 300k+ (70 LC)) zeigen aber ziemlich gut, dass eben der Verdienst irgendwann in den Mittelpunkt gerät und Teil des Erfolges ist. Es ist die Kennzahl der Expertise, des Erfolgs, es gibt auch in dieser ideell so stark verankerten Kultur an, wie erfolgreich jemand ist und ob er gut ist oder ob er weniger gut ist. Die Tatsache, dass das Gehalt im Mittelpunkt steht signalisiert bereits die Wichtigkeit von eben diesen Werten. Während in der Hacker Ethik etwas anderes (Lernen, Expertise) Mittelpunkt ist, so zeigt die Fixierung auf "six-figure-salaries" bereits, dass es ein großes Ziel ist, viel Geld zu verdienen. Ebenso liest sich in der Motivation vieler Entwickler, dass diese Branche durchaus lukrativ ist, um viel Geld zu verdienen. Aber durch die Fixierung auf Gehälter, die In-den-Mittelpunkt-Stellen dieser Gehälter wird schnell klar, dass Geld nicht untergeordnet ist, es ist das unmittelbare Ziel für das Bodenpersonal des Digitalkapitalismus, das von den Strukturvorteilen für die Entwickler ebenso profitieren möchte und somit wird in der spätkapitalistischen Version der Hacker-Ethik aus nicht-kommerziellen Werten und Vorstellungen ein kapitalistisches Arbeitsumfeld, in dem Geld der prägende Wert für Erfolg ist. ==> Zitate? 
 Dabei gibt es wenig Erwartungshaltung gegenüber einander in Diskussionen, in denen andere Saläre als schlecht/gering etc. tituliert werden, sondern dem Problem entsprechend diskutiert werden. Aber durch die Prominenz der Diskussionen um sechsstellige Gehälter (Stichwort 100k), der Diskussion um CoL, um housing cost etc. wird ständig über Geld diskutiert und sich auch hier versucht zu optimieren. Das bedeutet schlussendlich, dass aus dem Hobby, das man aus der Freude heraus macht, auch entsprechend bezahlt werden möchte, und hier scheint der Grundtenor zu sein, dass die SE um ihre Situation wissen und sehr demanding sind. Und in Kombination mit dem Teilen von Gehältern herrscht große Hilfe untereinander, um gemeinsam mehr Geld zu verdienen (gdqutam)
