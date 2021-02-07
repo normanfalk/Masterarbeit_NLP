@@ -1,6 +1,9 @@
 ---
 title: "R Notebook zur explorativen Datenanalyse"
 output: html_document
+knit: (function(inputFile, encoding) {
+    rmarkdown::render(inputFile, encoding = encoding, output_dir = "docs/")
+  })
 ---
 
 
@@ -268,5 +271,6 @@ Das Close-Reading hilft hier erneut: Der Diskurs um persönliche Projekte stellt
 Was insbesondere im Lern-Bereich auffällt ist, dass viele Fragen in die Richtung Career-Advice gehen und nach Rat gefragt wird. Hier sind die Ratschläge, die häufig für die Entwicklung persönlicher Projekte sprechen, zumeist sehr direkt und auffordernd. Die Wortwahl ist dabei "You should", "Start Working" etc. 
 
 Insofern kann zwischenzeitlich resümiert werden, dass arbeitsethische Diskurse bedeutend stark in die Richtung von Zeit und Zeitnutzung gehen, das bedeutet, dass es eine Prinzipienordnung für Freizeit gibt und wie diese zu werten ist. Auf der anderen Seite steht überall das Thema Lernen im Mittelpunkt und Weiterentwicklung im Mittelpunkt, das schlussendlich aber das Ziel der Employability hat. 
+Das ist ein klares Indiz dahingehend, dass sder 
 
 Wie sieht es mit Geld aus? Und welche Ethik-Bereiche gibt es noch? 
