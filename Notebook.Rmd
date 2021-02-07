@@ -2,7 +2,7 @@
 title: "R Notebook zur explorativen Datenanalyse"
 output: html_document
 knit: (function(inputFile, encoding) {
-    rmarkdown::render(inputFile, encoding = encoding, output_dir = "docs/")
+    rmarkdown::render(inputFile, encoding = encoding, output_dir = "docs/", output_file = "index.html")
   })
 ---
 
@@ -271,6 +271,52 @@ Das Close-Reading hilft hier erneut: Der Diskurs um persönliche Projekte stellt
 Was insbesondere im Lern-Bereich auffällt ist, dass viele Fragen in die Richtung Career-Advice gehen und nach Rat gefragt wird. Hier sind die Ratschläge, die häufig für die Entwicklung persönlicher Projekte sprechen, zumeist sehr direkt und auffordernd. Die Wortwahl ist dabei "You should", "Start Working" etc. 
 
 Insofern kann zwischenzeitlich resümiert werden, dass arbeitsethische Diskurse bedeutend stark in die Richtung von Zeit und Zeitnutzung gehen, das bedeutet, dass es eine Prinzipienordnung für Freizeit gibt und wie diese zu werten ist. Auf der anderen Seite steht überall das Thema Lernen im Mittelpunkt und Weiterentwicklung im Mittelpunkt, das schlussendlich aber das Ziel der Employability hat. 
-Das ist ein klares Indiz dahingehend, dass sder 
+Das ist ein klares Indiz dahingehend, dass sich eine Weiterentwicklung hin zum unternehmerischen Selbst im Gange ist. Die Prinzipienordnung für EntwicklerInnen entfaltet sich so, dass Wert darauf gelegt wird, sich weiter "anstellbar" zu halten, sich stetig mit neuen Dingen auseinander zu setzen und sich so in seiner Freizeit auf dem Arbeitsmarkt besser zu positionieren. 
+
+Gleichwohl diese Handlungsmuster tief im Handeln verankert sind, so haben Sie negative Effekte auf Teile der Community, was sich bei der Kookkurrenz des Themas "Free Time" bereits zeigt: Eine signifikante Kookkurrenz ist in der Tat die Nennung "overworked", die es sich genauer anzuschauen gilt. 
+
+```{r anxiety}
+
+
+tweets_dfm_grouped <- dfm(binDTM, groups = "topic")
+tstat_key <- textstat_keyness(tweets_dfm_grouped, 
+                              target = 4)
+
+textplot_keyness(tstat_key)
+
+datatable(corpus_subset(corpus_sentences_t4) %>% 
+  kwic(x = .,pattern = "anxiety", window = 10 ))
+
+```
+Aber auch neben overworked zeigt die Keyness-Metrik, dass im Topic 4 vermehrt über Dinge des persönlichen Lebens geredet werden, die suggerieren, dass hier die eigenen Vorstellungen durchkommen. Sowohl PTO (Paid/personal time off), als auch wfh (work from home), Schlaf, Angstzustände, Stress und Hobbies spielen eine Rolle. Der Diskurs, der um diese Begriffe entsteht, ist hingegen äußerst interessant außer einer Manigfaltigkeit an Gründen. Zum einen ist die Tatsache, dass von Ängsten und Angststörungen die Rede ist, zu vernehmen, dass solche Themen nicht tabuisiert und ignoriert werden und im Austausch nicht der reinen Marktlogik untergeordnet werden. Sie finden Platz und Raum und sie werden gehört. Das bedeutet, dass Problemberichte über Ängste, depressive Gedanken und Unsicherheit nicht ignoriert werden und nicht im Sinne einer toxischen Hacker-Ethik marginalisiert werden, sondern es entsteht unisono ein Raum, der Mut und Stärke zuspricht (gbhff91). Und er spricht nicht nur Stärke zu, das Thema der Angst und mentalen Einbußen, die die Arbeitswelt mit sich bringt, werden akzeptiert und untergeordnet. Teil der Hacker-Ethik, die quasi mitgibt, dass das ewiger Lernen/das Weiterentwickeln/die Expertise das höchste Gut sind, werden in beinahe allen Diskursen sofort eingenordet und dem großen Ganzen mentaler Gesundheit untergeordnet. 
+Zwar ist diese Beschreibung weniger explizit sichtbare Arbeitsethik, doch hier steckt das große wichtige Ziel und Prinzip der mentalen Gesundheit hinter. 
+
+Das bedeutet, dass die Grundprinzipien dieser Always-on-Mentalität mit stetiger Entwicklung aktiv gefördert wird, sie wird verlangt, Hacken darf und soll Hobby sein, aber es hat eine Grenze und die ist genau an dem Punkt angekommen, an dem die Psyche angegriffen wird. Schlussendlich ist das Hacken damit nicht das große allumfassende Ziel mit dem Impetus einer Leidenschaft und BErufung (finde ich hier gute Hinweise aus der Hacke-Ethik selbst?), sondern die Blickwinkel auf die Betätigung im IT-Sektot ist sehr sportlich. Es gibt einen hohen konkurrenzdruck, es gibt eine Erwartungshaltung, es gibt Wettbewerbs- und Entwicklungsdruck, aber es gibt auch eine offensichtliche Akzeptanz, ein Amateursportler zu sein. Was sich hinter diesen Ansichten verbirgt ist der ausgiebige Wunsch nach hoher Work-Life-Balance, die nicht nur in der Informatiker-Bubble zu erkennen ist (Studien dazu?). Arbeit ist dann doch nicht DAS Leben, sie ist ein großer Teil des Lebens und teilweise Hobby, aber nicht größer als der eigene Entfaltung der Persönlichkeit und des eigenen Lebens. Hier muss einschränkend hingewiesen werden, dass wir uns auch hier im Bereich der jungen meist juniorigen Mitarbeiter befinden, die ggf. von den neuen Anforderungen des Arbeitsleben auch überfordert sind, was die Problematik von Angst und Depression größer erscheinen lassen könnte, als sie tatsächlich ist, aber die Tatsache, dass darüber geredet wird (was auch mit dem medium zu tun hat) und wie darauf geantwortet wird, festigt die Prinzipienordnung. 
+
+
+```{r wfh}
+datatable(corpus_subset(corpus_sentences_t4, grepl("wfh", corpus_sentences_t4, ignore.case = T)) %>% 
+  kwic(x = .,pattern = "permanent", window = 10 ))
+
+binDTM %>% 
+  dfm_subset(topic == 4) %>% 
+  plotCooc(n=15, "wfh")
+
+```
+
+Die existierenden Diskussionen um "wfh" beispielsweise zeigt, wie sehr die Vorteile an der gesunkenen Pendelzeit wertgeschätzt werden, wie viele diese Lösung permanent oder in hybrider Form nachstreben und sich dies langfristig wünschen. Dahinter steckt hier auch im weitesten Sinne der Wunsch eigener Freiheit, wie in der Hacker Ethik beschrieben. Damals war das Thema häufig die Arbeitszeiten, während die aktuelle Pandemie wohl den Diskurs hin zu der Räumlichkeit des Arbeitens neu eröffnet hat. Die Freiheit der HackerInnen soll nicht an der Wahl der Arbeitszeit damals enden und sie sollte nun nicht an der Wahl des Arbeitsorts enden. Insbesondere dann, wenn 
+
+1. Awareness und Offenheit für psychische Probleme
+2. Gegenbewegeung. Hacker Ethik funktioniert nur bis zu dem Grad, der Machbar ist. Wichtigkeit von Work/Life-Balance. 
+
+==> NEUE vorstellungen usw. Wie ist der Diskurs bei den DIngen ausgeprägt? Einzeln durchgehen? 
+
 
 Wie sieht es mit Geld aus? Und welche Ethik-Bereiche gibt es noch? 
+
+
+
+
+
+Offene Fragen: 
+* Was sind die hochgewähltesten Posts in dieser Zeit? 
